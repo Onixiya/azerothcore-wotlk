@@ -758,8 +758,6 @@ enum Opcodes
     CMSG_AREA_SPIRIT_HEALER_QUEUE                   = 0x2E3,
     SMSG_AREA_SPIRIT_HEALER_TIME                    = 0x2E4,
     CMSG_GM_UNTEACH                                 = 0x2E5,
-    SMSG_WARDEN_DATA                                = 0x2E6,
-    CMSG_WARDEN_DATA                                = 0x2E7,
     SMSG_GROUP_JOINED_BATTLEGROUND                  = 0x2E8,
     MSG_BATTLEGROUND_PLAYER_POSITIONS               = 0x2E9,
     CMSG_PET_STOP_ATTACK                            = 0x2EA,

@@ -753,7 +753,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     WorldPacket packet, SendAddonPacked;
 
     BigNumber k;
-    bool wardenActive = sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED);
 
     if (sWorld->IsClosed())
     {
@@ -868,17 +867,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     uint32 recruiter = fields[8].GetUInt32();
     std::string os = fields[9].GetString();
     TotalTime = fields[10].GetUInt32();
-
-    // Must be done before WorldSession is created
-    if (wardenActive && os != "Win" && os != "OSX")
-    {
-        packet.Initialize(SMSG_AUTH_RESPONSE, 1);
-        packet << uint8(AUTH_REJECT);
-        SendPacket(packet);
-
-        sLog->outError("WorldSocket::HandleAuthSession: Client %s attempted to log in using invalid client OS (%s).", address.c_str(), os.c_str());
-        return -1;
-    }
 
     // Checks gmlevel per Realm
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_GMLEVEL_BY_REALMID);
@@ -1016,10 +1004,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // At this point, we can safely hook a successful login
     sScriptMgr->OnAccountLogin(id);
-
-    // Initialize Warden system only if it is enabled by config
-    if (wardenActive)
-        m_Session->InitWarden(&k, os);
 
     // Sleep this Network thread for
     uint32 sleepTime = sWorld->getIntConfig(CONFIG_SESSION_ADD_DELAY);

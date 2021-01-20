@@ -31,8 +31,6 @@
 #include "zlib.h"
 #include "ScriptMgr.h"
 #include "Transport.h"
-#include "WardenWin.h"
-#include "WardenMac.h"
 #include "SavingSystem.h"
 #include "AccountMgr.h"
 #ifdef ELUNA
@@ -120,7 +118,6 @@ WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
-    _warden = nullptr;
     _offlineTime = 0;
     _kicked = false;
     _shouldSetOfflineInDB = true;
@@ -151,12 +148,6 @@ WorldSession::~WorldSession()
         m_Socket->CloseSocket("WorldSession destructor");
         m_Socket->RemoveReference();
         m_Socket = nullptr;
-    }
-
-    if (_warden)
-    {
-        delete _warden;
-        _warden = nullptr;
     }
 
     ///- empty incoming packet queue
@@ -391,11 +382,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     if (updater.ProcessLogout())
     {
-        if (m_Socket && !m_Socket->IsClosed() && _warden)
-        {
-            _warden->Update(diff);
-        }
-
         time_t currTime = time(nullptr);
         if (ShouldLogOut(currTime) && !m_playerLoading)
         {
@@ -1323,21 +1309,6 @@ void WorldSession::ProcessQueryCallbackLogin()
         _charLoginCallback.get(param);
         HandlePlayerLoginFromDB((LoginQueryHolder*)param);
         _charLoginCallback.cancel();
-    }
-}
-
-void WorldSession::InitWarden(BigNumber* k, std::string const& os)
-{
-    if (os == "Win")
-    {
-        _warden = new WardenWin();
-        _warden->Init(this, k);
-    }
-    else if (os == "OSX")
-    {
-        // Disabled as it is causing the client to crash
-        // _warden = new WardenMac();
-        // _warden->Init(this, k);
     }
 }
 
