@@ -1,5 +1,4 @@
-This is a fork of [Azerothcore](https://github.com/azerothcore/azerothcore-wotlk) with my own small changes. Right now, only changes are to allow for slightly easier use
-with packaging software such as dpkg.
+This is a fork of [Azerothcore](https://github.com/azerothcore/azerothcore-wotlk) with my own small changes. Changes are dropping warden (as i always disable it) support, changing some files around to make it easier for packaging software such as dpkg and removing docker 
 
 # ![logo](https://raw.githubusercontent.com/azerothcore/azerothcore.github.io/master/images/logo-github.png) AzerothCore
 
@@ -127,8 +126,6 @@ Feel free to join us on [our Discord chat server](https://discord.gg/gkt4y2x) wh
 Installation instructions are available [here](http://www.azerothcore.org/wiki/Installation).
 
 We also have an auto-installation bash script [here](/apps/installer/main.sh) (*Warning: try it/analyze it before running it*).
-
-Dockerization of AzerothCore is fully supported, and we have various community-made tutorials (eg: AWS / Digital Ocean installation).
 
 
 ## Support
