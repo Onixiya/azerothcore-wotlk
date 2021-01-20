@@ -1,3 +1,6 @@
+This is a fork of [Azerothcore](https://github.com/azerothcore/azerothcore-wotlk) with my own small changes. Right now, only changes are to allow for slightly easier use
+with packaging software such as dpkg.
+
 # ![logo](https://raw.githubusercontent.com/azerothcore/azerothcore.github.io/master/images/logo-github.png) AzerothCore
 
 [![CodeFactor](https://www.codefactor.io/repository/github/azerothcore/azerothcore-wotlk/badge)](https://www.codefactor.io/repository/github/azerothcore/azerothcore-wotlk)
