@@ -285,8 +285,8 @@ PlayerSave.Stats.SaveOnlyOnLogout = 1
 #                     1 - (Enabled, vmap.enableHeight)
 #                     0 - (Disabled)
 
-vmap.enableLOS    = 1
-vmap.enableHeight = 1
+vmap.enableLOS    = 0
+vmap.enableHeight = 0
 
 #
 #    vmap.petLOS
@@ -3446,7 +3446,7 @@ DontCacheRandomMovementPaths = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-MoveMaps.Enable = 1
+MoveMaps.Enable = 0
 
 #
 #     Minigob.Manabonk.Enable
