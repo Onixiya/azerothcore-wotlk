@@ -40,7 +40,7 @@ set_target_properties(mmaps_generator
       "tools")
 
 if( UNIX )
-  install(TARGETS mmaps_generator DESTINATION bin/tools)
+  install(TARGETS mmaps_generator DESTINATION tools)
 elseif( WIN32 )
   install(TARGETS mmaps_generator DESTINATION "${CMAKE_INSTALL_PREFIX}")
 endif()
