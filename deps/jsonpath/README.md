@@ -124,36 +124,6 @@ kubectl get svc --all-namespaces -o json | JSONPath.sh -j -u \
     '$.items[?(@.spec.selector.app=".*dashboard")]..ports[*].nodePort'
 ```
 
-*DOCKER EXAMPLES*
-
-``` bash
-# Show Everything
-./JSONPath.sh -f test/valid/docker_stopped.json '$.*'
-
-# Look for an ip address (using case insensitive searching to start)
-./JSONPath.sh \
-    -f test/valid/docker_running.json \
-    /valid/docker_running.json -i '$..".*ip.*"'
-
-# Now get the IP address exactly
-./JSONPath.sh \
-    -f test/valid/docker_running.json \
-    '$.*.NetworkSettings.IPAddress' -b
-
-# Show all Mounts
-./JSONPath.sh \
-    -f test/valid/docker_stopped.json \
-    '$.[*].Mounts'
-
-# Show sources and destinations for all mounts
-./JSONPath.sh \
-    -f test/valid/docker_stopped.json \
-    '$.[*].Mounts[*].[Source,Destination]'
-
-# Use brief (-b) output to store mounts in an array for use in a loop
-readarray -t MNTS \
-  < <(./JSONPath.sh -b -f test/valid/docker_stopped.json '$.*.Mounts[*].[Source,Destination]')
-
 # the loop:
 for idx in `seq 0 $((${#MNTS[*]}/2-1))`; do
     echo "'${MNTS[idx*2]}' is mounted on the host at '${MNTS[idx*2+1]}'"
@@ -239,22 +209,6 @@ Combine with '-i' for case insensitive search.<br>
 Combine with '-w' to match whole words only.
 
 Examples:
-
-Find every node key starting with 'ip':
-
-``` bash
-# These are all equivalent
-./JSONPath.sh -f test/valid/docker_running.json -i "$..['ip.*']"
-./JSONPath.sh -f test/valid/docker_running.json -i '$..["ip.*"]'
-./JSONPath.sh -f test/valid/docker_running.json -i '$.."ip.*"'
-./JSONPath.sh -f test/valid/docker_running.json -i "$..'ip.*'"
-```
-
-Restrict the previous search to the bridge object.
-
-``` bash
-./JSONPath.sh -f test/valid/docker_running.json -i "$..bridge.'ip.*'"
-```
 
 Show all book titles by authors starting with 'Doug'.
 
