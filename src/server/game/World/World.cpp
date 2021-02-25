@@ -8,73 +8,75 @@
     \ingroup world
 */
 
-#include "Common.h"
-#include "DatabaseEnv.h"
-#include "Config.h"
-#include "GitRevision.h"
-#include "Log.h"
-#include "Opcodes.h"
-#include "WorldSession.h"
-#include "WorldPacket.h"
-#include "Player.h"
-#include "Vehicle.h"
-#include "SkillExtraItems.h"
-#include "SkillDiscovery.h"
-#include "World.h"
 #include "AccountMgr.h"
 #include "AchievementMgr.h"
-#include "AuctionHouseMgr.h"
-#include "ObjectMgr.h"
-#include "ArenaTeamMgr.h"
-#include "GuildMgr.h"
-#include "TicketMgr.h"
-#include "SpellMgr.h"
-#include "GroupMgr.h"
-#include "Chat.h"
-#include "DBCStores.h"
-#include "LootMgr.h"
-#include "ItemEnchantmentMgr.h"
-#include "MapManager.h"
-#include "CreatureAIRegistry.h"
-#include "BattlegroundMgr.h"
-#include "BattlefieldMgr.h"
-#include "OutdoorPvPMgr.h"
-#include "TemporarySummon.h"
-#include "WaypointMovementGenerator.h"
-#include "VMapFactory.h"
-#include "MMapFactory.h"
-#include "GameEventMgr.h"
-#include "PoolMgr.h"
-#include "GridNotifiersImpl.h"
-#include "CellImpl.h"
-#include "InstanceSaveMgr.h"
-#include "Util.h"
-#include "Language.h"
-#include "CreatureGroups.h"
-#include "Transport.h"
-#include "ScriptMgr.h"
 #include "AddonMgr.h"
-#include "LFGMgr.h"
-#include "ConditionMgr.h"
-#include "DisableMgr.h"
-#include "CharacterDatabaseCleaner.h"
-#include "ScriptMgr.h"
-#include "WeatherMgr.h"
-#include "CreatureTextMgr.h"
-#include "SmartAI.h"
+#include "ArenaTeamMgr.h"
+#include "AsyncAuctionListing.h"
+#include "AuctionHouseMgr.h"
+#include "AvgDiffTracker.h"
+#include "BattlefieldMgr.h"
+#include "BattlegroundMgr.h"
+#include "CalendarMgr.h"
+#include "CellImpl.h"
 #include "Channel.h"
 #include "ChannelMgr.h"
-#include "CalendarMgr.h"
-#include "PetitionMgr.h"
-#include "LootItemStorage.h"
-#include "TransportMgr.h"
-#include "AvgDiffTracker.h"
+#include "CharacterDatabaseCleaner.h"
+#include "Chat.h"
+#include "Common.h"
+#include "ConditionMgr.h"
+#include "Config.h"
+#include "CreatureAIRegistry.h"
+#include "CreatureGroups.h"
+#include "CreatureTextMgr.h"
+#include "DatabaseEnv.h"
+#include "DBCStores.h"
+#include "DisableMgr.h"
 #include "DynamicVisibility.h"
-#include "WhoListCache.h"
-#include "AsyncAuctionListing.h"
-#include "SavingSystem.h"
-#include "ServerMotd.h"
+#include "GameEventMgr.h"
 #include "GameGraveyard.h"
+#include "GitRevision.h"
+#include "GridNotifiersImpl.h"
+#include "GroupMgr.h"
+#include "GuildMgr.h"
+#include "InstanceSaveMgr.h"
+#include "ItemEnchantmentMgr.h"
+#include "Language.h"
+#include "LFGMgr.h"
+#include "Log.h"
+#include "LootItemStorage.h"
+#include "LootMgr.h"
+#include "MapManager.h"
+#include "MMapFactory.h"
+#include "ObjectMgr.h"
+#include "Opcodes.h"
+#include "OutdoorPvPMgr.h"
+#include "PetitionMgr.h"
+#include "Player.h"
+#include "PoolMgr.h"
+#include "SavingSystem.h"
+#include "ScriptMgr.h"
+#include "ScriptMgr.h"
+#include "ServerMotd.h"
+#include "SkillDiscovery.h"
+#include "SkillExtraItems.h"
+#include "SmartAI.h"
+#include "SpellMgr.h"
+#include "TemporarySummon.h"
+#include "TicketMgr.h"
+#include "Transport.h"
+#include "TransportMgr.h"
+#include "Util.h"
+#include "Vehicle.h"
+#include "VMapFactory.h"
+#include "Warden.h"
+#include "WardenCheckMgr.h"
+#include "WaypointMovementGenerator.h"
+#include "WeatherMgr.h"
+#include "WhoListCache.h"
+#include "World.h"
+#include "WorldPacket.h"
+#include "WorldSession.h"
 #include <VMapManager2.h>
 
 #ifdef ELUNA
@@ -1311,6 +1313,16 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_CHATLOG_ADDON]   = sConfigMgr->GetBoolDefault("ChatLogs.Addon", false);
     m_bool_configs[CONFIG_CHATLOG_BGROUND] = sConfigMgr->GetBoolDefault("ChatLogs.BattleGround", false);
 
+    // Warden
+    m_bool_configs[CONFIG_WARDEN_ENABLED]              = sConfigMgr->GetBoolDefault("Warden.Enabled", false);
+    m_int_configs[CONFIG_WARDEN_NUM_MEM_CHECKS]        = sConfigMgr->GetIntDefault("Warden.NumMemChecks", 3);
+    m_int_configs[CONFIG_WARDEN_NUM_LUA_CHECKS]        = sConfigMgr->GetIntDefault("Warden.NumLuaChecks", 1);
+    m_int_configs[CONFIG_WARDEN_NUM_OTHER_CHECKS]      = sConfigMgr->GetIntDefault("Warden.NumOtherChecks", 7);
+    m_int_configs[CONFIG_WARDEN_CLIENT_BAN_DURATION]   = sConfigMgr->GetIntDefault("Warden.BanDuration", 86400);
+    m_int_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF]  = sConfigMgr->GetIntDefault("Warden.ClientCheckHoldOff", 30);
+    m_int_configs[CONFIG_WARDEN_CLIENT_FAIL_ACTION]    = sConfigMgr->GetIntDefault("Warden.ClientCheckFailAction", 0);
+    m_int_configs[CONFIG_WARDEN_CLIENT_RESPONSE_DELAY] = sConfigMgr->GetIntDefault("Warden.ClientResponseDelay", 600);
+
     // Dungeon finder
     m_int_configs[CONFIG_LFG_OPTIONSMASK] = sConfigMgr->GetIntDefault("DungeonFinder.OptionsMask", 3);
 
@@ -1989,6 +2001,13 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Loading Transports...");
     sTransportMgr->SpawnContinentTransports();
+
+    ///- Initialize Warden
+    sLog->outString("Loading Warden Checks..." );
+    sWardenCheckMgr->LoadWardenChecks();
+
+    sLog->outString("Loading Warden Action Overrides..." );
+    sWardenCheckMgr->LoadWardenOverrides();
 
     sLog->outString("Deleting expired bans...");
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");      // One-time query

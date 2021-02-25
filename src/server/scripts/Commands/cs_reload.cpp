@@ -17,6 +17,7 @@ EndScriptData */
 #include "Chat.h"
 #include "CreatureTextMgr.h"
 #include "DisableMgr.h"
+#include "GameGraveyard.h"
 #include "Language.h"
 #include "LFGMgr.h"
 #include "MapManager.h"
@@ -28,7 +29,6 @@ EndScriptData */
 #include "SpellMgr.h"
 #include "TicketMgr.h"
 #include "WaypointManager.h"
-#include "GameGraveyard.h"
 
 class reload_commandscript : public CommandScript
 {
