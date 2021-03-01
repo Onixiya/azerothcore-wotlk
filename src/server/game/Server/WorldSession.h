@@ -760,7 +760,6 @@ public:                                                 // opcodes handlers
     void HandleBattlemasterJoinArena(WorldPacket& recvData);
     void HandleReportPvPAFK(WorldPacket& recvData);
 
-    void HandleWardenDataOpcode(WorldPacket& recvData);
     void HandleWorldTeleportOpcode(WorldPacket& recvData);
     void HandleMinimapPingOpcode(WorldPacket& recvData);
     void HandleRandomRollOpcode(WorldPacket& recvData);
