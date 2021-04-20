@@ -68,8 +68,6 @@
 #include "Util.h"
 #include "Vehicle.h"
 #include "VMapFactory.h"
-#include "Warden.h"
-#include "WardenCheckMgr.h"
 #include "WaypointMovementGenerator.h"
 #include "WeatherMgr.h"
 #include "WhoListCache.h"
@@ -1302,16 +1300,6 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_NUMTHREADS]                  = sConfigMgr->GetOption<int32>("MapUpdate.Threads", 1);
     m_int_configs[CONFIG_MAX_RESULTS_LOOKUP_COMMANDS] = sConfigMgr->GetOption<int32>("Command.LookupMaxResults", 0);
 
-    // Warden
-    m_bool_configs[CONFIG_WARDEN_ENABLED]              = sConfigMgr->GetOption<bool>("Warden.Enabled", true);
-    m_int_configs[CONFIG_WARDEN_NUM_MEM_CHECKS]        = sConfigMgr->GetOption<int32>("Warden.NumMemChecks", 3);
-    m_int_configs[CONFIG_WARDEN_NUM_LUA_CHECKS]        = sConfigMgr->GetOption<int32>("Warden.NumLuaChecks", 1);
-    m_int_configs[CONFIG_WARDEN_NUM_OTHER_CHECKS]      = sConfigMgr->GetOption<int32>("Warden.NumOtherChecks", 7);
-    m_int_configs[CONFIG_WARDEN_CLIENT_BAN_DURATION]   = sConfigMgr->GetOption<int32>("Warden.BanDuration", 86400);
-    m_int_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF]  = sConfigMgr->GetOption<int32>("Warden.ClientCheckHoldOff", 30);
-    m_int_configs[CONFIG_WARDEN_CLIENT_FAIL_ACTION]    = sConfigMgr->GetOption<int32>("Warden.ClientCheckFailAction", 0);
-    m_int_configs[CONFIG_WARDEN_CLIENT_RESPONSE_DELAY] = sConfigMgr->GetOption<int32>("Warden.ClientResponseDelay", 600);
-
     // Dungeon finder
     m_int_configs[CONFIG_LFG_OPTIONSMASK] = sConfigMgr->GetOption<int32>("DungeonFinder.OptionsMask", 3);
 
@@ -1996,13 +1984,6 @@ void World::SetInitialWorldSettings()
 
     LOG_INFO("server", "Loading Transports...");
     sTransportMgr->SpawnContinentTransports();
-
-    ///- Initialize Warden
-    LOG_INFO("server", "Loading Warden Checks..." );
-    sWardenCheckMgr->LoadWardenChecks();
-
-    LOG_INFO("server", "Loading Warden Action Overrides..." );
-    sWardenCheckMgr->LoadWardenOverrides();
 
     LOG_INFO("server", "Deleting expired bans...");
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");      // One-time query
