@@ -52,7 +52,7 @@ nbproject/
 cmake-build-debug/*
 cmake-build-debug-coverage/*
 coverage-report/
-.vscode
+.vscode/*
 
 #
 # Eclipse
