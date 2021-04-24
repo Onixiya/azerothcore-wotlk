@@ -14,6 +14,7 @@
 #include "AccountMgr.h"
 #include "AddonMgr.h"
 #include "BanManager.h"
+#include "CircularBuffer.h"
 #include "Common.h"
 #include "Cryptography/BigNumber.h"
 #include "DatabaseEnv.h"
@@ -23,6 +24,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include <utility>
+#include <map>
 
 class Creature;
 class GameObject;
@@ -123,7 +125,7 @@ public:
     virtual ~PacketFilter() = default;
 
     virtual bool Process(WorldPacket* /*packet*/) { return true; }
-    [[nodiscard]] virtual bool ProcessLogout() const { return true; }
+    [[nodiscard]] virtual bool ProcessUnsafe() const { return true; }
 
 protected:
     WorldSession* const m_pSession;
@@ -137,7 +139,7 @@ public:
 
     bool Process(WorldPacket* packet) override;
     //in Map::Update() we do not process player logout!
-    [[nodiscard]] bool ProcessLogout() const override { return false; }
+    [[nodiscard]] bool ProcessUnsafe() const override { return false; }
 };
 
 //class used to filer only thread-unsafe packets from queue
@@ -354,7 +356,6 @@ public:
 
     uint32 GetLatency() const { return m_latency; }
     void SetLatency(uint32 latency) { m_latency = latency; }
-    void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
 
     std::atomic<time_t> m_timeOutTime;
     void UpdateTimeOutTime(uint32 diff)
@@ -384,6 +385,9 @@ public:
     time_t GetCalendarEventCreationCooldown() const { return _calendarEventCreationCooldown; }
     void SetCalendarEventCreationCooldown(time_t cooldown) { _calendarEventCreationCooldown = cooldown; }
 
+    // Time Synchronisation
+    void ResetTimeSync();
+    void SendTimeSync();
 public:                                                 // opcodes handlers
     void Handle_NULL(WorldPacket& recvPacket);          // not used
     void Handle_EarlyProccess(WorldPacket& recvPacket); // just mark packets processed in WorldSocket::OnRead
@@ -1021,7 +1025,6 @@ private:
     LocaleConstant m_sessionDbcLocale;
     LocaleConstant m_sessionDbLocaleIndex;
     uint32 m_latency;
-    uint32 m_clientTimeDelay;
     AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
     uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
     bool   m_TutorialsChanged;
@@ -1037,6 +1040,14 @@ private:
     bool _shouldSetOfflineInDB;
     // Packets cooldown
     time_t _calendarEventCreationCooldown;
+
+    CircularBuffer<std::pair<int64, uint32>> _timeSyncClockDeltaQueue; // first member: clockDelta. Second member: latency of the packet exchange that was used to compute that clockDelta.
+    int64 _timeSyncClockDelta;
+    void ComputeNewClockDelta();
+
+    std::map<uint32, uint32> _pendingTimeSyncRequests; // key: counter. value: server time when packet with that counter was sent.
+    uint32 _timeSyncNextCounter;
+    uint32 _timeSyncTimer;
 };
 #endif
 /// @}
