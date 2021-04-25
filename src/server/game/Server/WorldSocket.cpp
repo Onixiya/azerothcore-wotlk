@@ -671,7 +671,6 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
             case CMSG_PING:
                 try
                 {
-<<<<<<< HEAD
                     try
                     {
                         return HandlePing(*new_pct);
@@ -679,9 +678,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
                     catch (ByteBufferPositionException const&) {}
                     sLog->outError("WorldSocket::ReadDataHandler(): client sent malformed CMSG_PING");
                     return -1;
-=======
                     return HandlePing(*new_pct);
->>>>>>> 26a477dd126c68a46f265b97dd439d9982bba1d1
                 }
                 catch (ByteBufferPositionException const&) { }
                  LOG_ERROR("server", "WorldSocket::ReadDataHandler(): client sent malformed CMSG_PING");
@@ -701,7 +698,6 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
                 new_pct = new WorldPacket(std::move(*new_pct), std::chrono::steady_clock::now());
                 break;
             default:
-<<<<<<< HEAD
                 {
                     std::lock_guard<std::mutex> guard(m_SessionLock);
 
@@ -722,9 +718,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
                         return -1;
                     }
                 }
-=======
                 break;
->>>>>>> 26a477dd126c68a46f265b97dd439d9982bba1d1
         }
     }
     catch (ByteBufferException const&)
