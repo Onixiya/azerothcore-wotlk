@@ -112,7 +112,6 @@ WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8
     recruiterId(recruiter),
     isRecruiter(isARecruiter),
     m_currentVendorEntry(0),
-    m_currentBankerGUID(0),
     timeWhoCommandAllowed(0),
     _calendarEventCreationCooldown(0),
     _timeSyncClockDeltaQueue(6),
@@ -182,9 +181,9 @@ std::string WorldSession::GetPlayerInfo() const
 }
 
 /// Get player guid if available. Use for logging purposes only
-uint32 WorldSession::GetGuidLow() const
+ObjectGuid::LowType WorldSession::GetGuidLow() const
 {
-    return GetPlayer() ? GetPlayer()->GetGUIDLow() : 0;
+    return GetPlayer() ? GetPlayer()->GetGUID().GetCounter() : 0;
 }
 
 /// Send a packet to the client
@@ -459,7 +458,7 @@ void WorldSession::HandleTeleportTimeout(bool updateInSessions)
                     if (!plMover)
                         break;
                     WorldPacket pkt(MSG_MOVE_TELEPORT_ACK, 20);
-                    pkt.append(plMover->GetPackGUID());
+                    pkt << plMover->GetPackGUID();
                     pkt << uint32(0); // flags
                     pkt << uint32(0); // time
                     HandleMoveTeleportAck(pkt);
@@ -480,7 +479,7 @@ void WorldSession::LogoutPlayer(bool save)
 
     if (_player)
     {
-        if (uint64 lguid = _player->GetLootGUID())
+        if (ObjectGuid lguid = _player->GetLootGUID())
             DoLootRelease(lguid);
 
         ///- If the player just died before logging out, make him appear as a ghost
@@ -527,7 +526,7 @@ void WorldSession::LogoutPlayer(bool save)
                     if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_TRACK_DESERTERS))
                     {
                         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_DESERTER_TRACK);
-                        stmt->setUInt32(0, _player->GetGUIDLow());
+                        stmt->setUInt32(0, _player->GetGUID().GetCounter());
                         stmt->setUInt8(1, BG_DESERTION_TYPE_INVITE_LOGOUT);
                         CharacterDatabase.Execute(stmt);
                     }
@@ -572,7 +571,7 @@ void WorldSession::LogoutPlayer(bool save)
             for (int j = BUYBACK_SLOT_START; j < BUYBACK_SLOT_END; ++j)
             {
                 eslot = j - BUYBACK_SLOT_START;
-                _player->SetUInt64Value(PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + (eslot * 2), 0);
+                _player->SetGuidValue(PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + (eslot * 2), ObjectGuid::Empty);
                 _player->SetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE_1 + eslot, 0);
                 _player->SetUInt32Value(PLAYER_FIELD_BUYBACK_TIMESTAMP_1 + eslot, 0);
             }
@@ -596,13 +595,14 @@ void WorldSession::LogoutPlayer(bool save)
         }
 
         //! Broadcast a logout message to the player's friends
-        sSocialMgr->SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
-        sSocialMgr->RemovePlayerSocial(_player->GetGUIDLow());
+        sSocialMgr->SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUID(), true);
+        sSocialMgr->RemovePlayerSocial(_player->GetGUID());
 
         //! Call script hook before deletion
         sScriptMgr->OnPlayerLogout(_player);
 
-        LOG_INFO("entities.player", "Account: %d (IP: %s) Logout Character:[%s] (GUID: %u) Level: %d", GetAccountId(), GetRemoteAddress().c_str(), _player->GetName().c_str(), _player->GetGUIDLow(), _player->getLevel());
+        LOG_INFO("entities.player", "Account: %d (IP: %s) Logout Character:[%s] (%s) Level: %d",
+            GetAccountId(), GetRemoteAddress().c_str(), _player->GetName().c_str(), _player->GetGUID().ToString().c_str(), _player->getLevel());
 
         //! Remove the player from the world
         // the player may not be in the world when logging out
@@ -852,7 +852,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
 
     if (mi->HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
     {
-        data.readPackGUID(mi->transport.guid);
+        data >> mi->transport.guid.ReadAsPacked();
 
         data >> mi->transport.pos.PositionXYZOStream();
         data >> mi->transport.time;
@@ -886,8 +886,8 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
         if (check) \
         { \
             LOG_DEBUG("entities.unit", "WorldSession::ReadMovementInfo: Violation of MovementFlags found (%s). " \
-                "MovementFlags: %u, MovementFlags2: %u for player GUID: %u. Mask %u will be removed.", \
-                STRINGIZE(check), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), GetPlayer()->GetGUIDLow(), maskToRemove); \
+                "MovementFlags: %u, MovementFlags2: %u for player %s. Mask %u will be removed.", \
+                STRINGIZE(check), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), GetPlayer()->GetGUID().ToString().c_str(), maskToRemove); \
             mi->RemoveMovementFlag((maskToRemove)); \
         } \
     }
@@ -959,7 +959,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
 
 void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
 {
-    data->appendPackGUID(mi->guid);
+    *data << mi->guid.WriteAsPacked();
 
     *data << mi->flags;
     *data << mi->flags2;
@@ -968,7 +968,7 @@ void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
 
     if (mi->HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
     {
-        data->appendPackGUID(mi->transport.guid);
+        *data << mi->transport.guid.WriteAsPacked();
 
         *data << mi->transport.pos.PositionXYZOStream();
         *data << mi->transport.time;
@@ -1161,7 +1161,7 @@ void WorldSession::SetPlayer(Player* player)
 {
     _player = player;
     if (_player)
-        m_GUIDLow = _player->GetGUIDLow();
+        m_GUIDLow = _player->GetGUID().GetCounter();
 }
 
 void WorldSession::InitializeQueryCallbackParameters()
@@ -1198,7 +1198,7 @@ void WorldSession::ProcessQueryCallbackPlayer()
     {
         uint8 bagIndex = _openWrappedItemCallback.GetFirstParam();
         uint8 slot = _openWrappedItemCallback.GetSecondParam();
-        uint32 itemLowGUID = _openWrappedItemCallback.GetThirdParam();
+        ObjectGuid::LowType itemLowGUID = _openWrappedItemCallback.GetThirdParam();
         _openWrappedItemCallback.GetResult(result);
         HandleOpenWrappedItemCallback(result, bagIndex, slot, itemLowGUID);
         _openWrappedItemCallback.FreeResult();
@@ -1220,7 +1220,7 @@ void WorldSession::ProcessQueryCallbackPet()
     //- SendStabledPet
     if (_sendStabledPetCallback.IsReady())
     {
-        uint64 param = _sendStabledPetCallback.GetParam();
+        ObjectGuid param = _sendStabledPetCallback.GetParam();
         _sendStabledPetCallback.GetResult(result);
         SendStablePetCallback(result, param);
         _sendStabledPetCallback.FreeResult();
