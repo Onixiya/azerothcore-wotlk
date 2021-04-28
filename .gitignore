@@ -13,7 +13,6 @@
 /env/user/*
 /.env*
 /apps/joiner
-/deps/deno
 
 !.gitkeep
 
