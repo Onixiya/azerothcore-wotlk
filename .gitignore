@@ -9,8 +9,20 @@
 !/modules/*.sh
 /build*/
 /var/*
+!/var/build/.gitkeep
+!/var/ccache/.gitkeep
 /env/dist/*
+!/env/dist/.gitkeep
 /env/user/*
+<<<<<<< HEAD
+=======
+/env/docker/*
+!/env/docker/bin/.gitkeep
+!/env/docker/data/.gitkeep
+!/env/docker/etc/authserver.conf.dockerdist
+!/env/docker/etc/worldserver.conf.dockerdist
+!/env/docker/logs/.gitkeep
+>>>>>>> e25e75d34263a597ac8240d5f45beca3aa962e7e
 /.env*
 /apps/joiner
 
