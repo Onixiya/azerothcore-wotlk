@@ -96,6 +96,10 @@ function comp_compile() {
   cd $CWD
 
   runHooks "ON_AFTER_BUILD"
+
+  # set worldserver SUID bit
+  sudo chown root:root "$AC_BINPATH_FULL/worldserver"
+  sudo chmod u+s "$AC_BINPATH_FULL/worldserver"
 }
 
 function comp_build() {
