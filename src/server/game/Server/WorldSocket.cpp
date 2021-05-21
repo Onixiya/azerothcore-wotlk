@@ -879,18 +879,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         return -1;
     }
 
-    // Must be done before WorldSession is created
-    bool wardenActive = sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED);
-    if (wardenActive && account.OS != "Win" && account.OS != "OSX")
-    {
-        packet.Initialize(SMSG_AUTH_RESPONSE, 1);
-        packet << uint8(AUTH_REJECT);
-        SendPacket(packet);
-        LOG_ERROR("network", "WorldSocket::HandleAuthSession: Client %s attempted to log in using invalid client OS (%s).", address.c_str(), account.OS.c_str());
-        sScriptMgr->OnFailedAccountLogin(account.Id);
-        return -1;
-    }
-
     // Check that Key and account name are the same on client and server
     uint8 t[4] = { 0x00, 0x00, 0x00, 0x00 };
 
@@ -990,10 +978,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // At this point, we can safely hook a successful login
     sScriptMgr->OnAccountLogin(account.Id);
-
-    // Initialize Warden system only if it is enabled by config
-    if (wardenActive)
-        m_Session->InitWarden(account.SessionKey, account.OS);
 
     // Sleep this Network thread for
     uint32 sleepTime = sWorld->getIntConfig(CONFIG_SESSION_ADD_DELAY);
