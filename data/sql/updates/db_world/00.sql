@@ -1,4 +1,4 @@
--- DB update 2021_06_14_01 -> 2021_06_15_00
+-- DB update 2021_06_14_01 -> 2021_06_17_00
 DROP PROCEDURE IF EXISTS `updateDb`;
 DELIMITER //
 CREATE PROCEDURE updateDb ()
@@ -8,23 +8,21 @@ FROM information_schema.COLUMNS
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'version_db_world' AND COLUMN_NAME = '2021_06_14_01';
 IF @COLEXISTS = 0 THEN LEAVE proc; END IF;
 START TRANSACTION;
-ALTER TABLE version_db_world CHANGE COLUMN 2021_06_14_01 2021_06_15_00 bit;
-SELECT sql_rev INTO OK FROM version_db_world WHERE sql_rev = '1622504741914151600'; IF OK <> 'FALSE' THEN LEAVE proc; END IF;
+ALTER TABLE version_db_world CHANGE COLUMN 2021_06_14_01 2021_06_17_00 bit;
+SELECT sql_rev INTO OK FROM version_db_world WHERE sql_rev = '1623303655379442308'; IF OK <> 'FALSE' THEN LEAVE proc; END IF;
 --
 -- START UPDATING QUERIES
 --
 
-INSERT INTO `version_db_world` (`sql_rev`) VALUES ('1622504741914151600');
+INSERT INTO `version_db_world` (`sql_rev`) VALUES ('1623303655379442308');
 
-DELETE FROM `acore_string` WHERE `entry` IN (713, 726);
-INSERT INTO `acore_string` (`entry`, `content_default`) VALUES
-(713, 'Queue status for %s (skirmish %s) (Lvl: %u to %u)\nQueued: %u (Need at least %u more)'),
-(726, '|cffff0000[Arena Queue]:|r %s (skirmish %s) -- [%u-%u] [%u/%u]|r');
+-- Unify and increase drop chance for Diabolical Plans to 8% (was 1.2% .. 3%)
+UPDATE `creature_loot_template` SET `Chance`=8 WHERE `Item` IN (23777, 23797);
 
 --
 -- END UPDATING QUERIES
 --
-UPDATE version_db_world SET date = '2021_06_15_00' WHERE sql_rev = '1622504741914151600';
+UPDATE version_db_world SET date = '2021_06_17_00' WHERE sql_rev = '1623303655379442308';
 COMMIT;
 END //
 DELIMITER ;
