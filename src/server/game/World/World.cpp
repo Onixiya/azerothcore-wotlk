@@ -3442,4 +3442,3 @@ uint32 World::GetNextWhoListUpdateDelaySecs()
 
     return uint32(ceil(t / 1000.0f));
 }
-
