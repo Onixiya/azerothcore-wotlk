@@ -15,7 +15,6 @@
 #include "IPLocation.h"
 #include "Log.h"
 #include "RealmList.h"
-#include "SecretMgr.h"
 #include "Timer.h"
 #include "Util.h"
 #include <boost/lexical_cast.hpp>

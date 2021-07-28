@@ -32,7 +32,6 @@
 #include "Resolver.h"
 #include "ScriptLoader.h"
 #include "ScriptMgr.h"
-#include "SecretMgr.h"
 #include "SharedDefines.h"
 #include "World.h"
 #include "WorldSocket.h"
@@ -285,7 +284,6 @@ int main(int argc, char** argv)
     });
 
     ///- Initialize the World
-    sSecretMgr->Initialize();
     sWorld->SetInitialWorldSettings();
 
     std::shared_ptr<void> mapManagementHandle(nullptr, [](void*)

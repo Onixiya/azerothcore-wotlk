@@ -21,7 +21,6 @@ EndScriptData */
 #include "Player.h"
 #include "Realm.h"
 #include "ScriptMgr.h"
-#include "SecretMgr.h"
 #include "StringConvert.h"
 #include <openssl/rand.h>
 #include <unordered_map>
@@ -37,20 +36,13 @@ public:
         {
             { "addon",      SEC_GAMEMASTER,     true,   &HandleAccountSetAddonCommand,          "" },
             { "gmlevel",    SEC_CONSOLE,        true,   &HandleAccountSetGmLevelCommand,        "" },
-            { "password",   SEC_CONSOLE,        true,   &HandleAccountSetPasswordCommand,       "" },
-            { "2fa",        SEC_PLAYER,         true,   &HandleAccountSet2FACommand,            "" }
+            { "password",   SEC_CONSOLE,        true,   &HandleAccountSetPasswordCommand,       "" }
         };
 
         static std::vector<ChatCommand> accountLockCommandTable
         {
             { "country",    SEC_PLAYER,         true,   &HandleAccountLockCountryCommand,       "" },
             { "ip",         SEC_PLAYER,         true,   &HandleAccountLockIpCommand,            "" }
-        };
-
-        static std::vector<ChatCommand> account2faCommandTable
-        {
-            { "setup",      SEC_PLAYER,         false,  &HandleAccount2FASetupCommand,          "" },
-            { "remove",     SEC_PLAYER,         false,  &HandleAccount2FARemoveCommand,         "" },
         };
 
         static std::vector<ChatCommand> accountRemoveCommandTable
@@ -60,7 +52,6 @@ public:
 
         static std::vector<ChatCommand> accountCommandTable =
         {
-            { "2fa",        SEC_PLAYER,         true,   nullptr, "", account2faCommandTable        },
             { "addon",      SEC_MODERATOR,      false,  &HandleAccountAddonCommand,             "" },
             { "create",     SEC_CONSOLE,        true,   &HandleAccountCreateCommand,            "" },
             { "delete",     SEC_CONSOLE,        true,   &HandleAccountDeleteCommand,            "" },
